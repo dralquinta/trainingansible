@@ -5,7 +5,7 @@
 # Purpose: Orchestrated configuration to later call canonical roles
 #         
 # Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
-#
+
 
 - name: Calling all canonical roles in correct order
   block:
