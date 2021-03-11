@@ -1,0 +1,62 @@
+---
+# Author: DALQUINT - denny.alquinta@oracle.com 
+# Purpose: Declares static variables used on project
+#         
+# Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+#
+
+#General Variables
+ofa_dir: '/u01'
+opc_home_dir: '/home/opc'
+opc_user: 'opc'
+opc_group: 'opc'
+stage_home: '{{ofa_dir}}/stage'
+template_home: '{{ofa_dir}}/templates'
+server_config: '{{template_home}}/server_config'
+cert_home: '{{ofa_dir}}/certs'
+key_path: '/home/opc/.ssh'
+replaced_text_var: 'Replaced_Text_From_Ansible'
+
+#WebLogic based sample variables
+product: '12214'
+product_sub_dir : 'WLS01'
+domain_user_name: 'weblogic'
+domain_password: 'welcome1'
+admin_server_name: 'AdminServer'
+admin_server_port: '7001'
+managed_server_port: 8003
+node_manager_port: '5556'
+admin_port_enabled: 'false'
+production_mode_enabled: 'prod'
+nm_service_name: 'nm_wls'
+
+#AUTO-CONSTRUCTS - Do not touch
+ansible_user : opc
+
+
+
+#OFA Directories
+oracle_home: '{{ofa_dir}}/app/oracle/product/fmw/{{product}}'
+jdk_home: '{{oracle_home}}/jdk'
+jdk_bin: '{{jdk_home}}/bin'
+jre_lib: '{{java_home}}/jre/lib/security'
+wls_server_lib: '{{wls_home}}/wlserver/server/lib'
+oracle_common: '{{ofa_dir}}/app/oracle/product/fmw/{{product}}/{{product_sub_dir}}/oracle_common'
+wls_home: '{{ofa_dir}}/app/oracle/product/fmw/{{product}}/{{product_sub_dir}}'
+java_home: '{{ofa_dir}}/app/oracle/product/fmw/{{product}}/jdk'  
+domain_root: '{{ofa_dir}}/app/oracle/config/domains'
+domain_home: '{{domain_root}}/{{domain_name}}'
+server_bin: '{{wls_home}}/wlserver/server/bin'
+wls_template_jar: '{{wls_home}}/wlserver/common/templates/wls/wls.jar'
+domain_jdbc_config_home: '{{domain_home}}/config/jdbc'
+key_path: '/home/opc/.ssh'
+domain_lib: '{{domain_home}}/lib'
+
+
+
+
+
+
+
+
+

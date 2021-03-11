@@ -1,0 +1,69 @@
+---
+# 
+# Author: DALQUINT - denny.alquinta@oracle.com  
+# Purpose: Performs the steps required to create a WebLogic Server 12.2.x Domain on top of OEL 7.
+#         
+# Copyright (c) 2021 Oracle and/or its affiliates. All rights reserved.
+#
+- name: "PRECONDITION CHECK - [1/1] Check if .bashrc exists"
+  become: yes
+  stat:
+    path: "{{ opc_home_dir }}/.bashrc"
+  register: bashrc_exists
+
+
+- name: "PRECONDITION CHECK - [1/1] Configuration file exists"
+  become: yes
+  stat:
+    path: "{{ ofa_dir }}/the_other_config_file"
+  register: other_config_file_exists
+
+
+- name: Perform Configuration Tasks
+  block:    
+        
+    - name: "TAKS_SPEC - [1/N] -  Enter a string before a specfic string"
+      become: yes
+      become_user: "{{ opc_user }}"
+      lineinfile:
+        path: "{{template_home}}/dummy_file"
+        insertbefore: 'DUMMY_FOR_BEFORE'
+        line: 'FLAG_FROM_ANSIBLE_BEFORE="true"'
+
+
+
+    - name: "TAKS_SPEC - [2/N] - Enter a string after a specfic string"
+      become: yes
+      become_user: "{{ opc_user }}"
+      lineinfile:
+        path: "{{template_home}}/dummy_file"
+        regexp: '^DUMMY_FOR_AFTER(.*)'
+        insertafter: '^DUMMY_FOR_AFTER(.*)'
+        line: 'FLAG_FROM_ANSIBLE_AFTER="true"'
+
+
+    - name : "TAKS_SPEC - [3/N] - Replace a regular expression with startup string FOOBAR"
+      become: yes
+      become_user: "{{ opc_user }}"
+      lineinfile:
+        path: "{{template_home}}/dummy_file"
+        state: present
+        regexp: ^FOOBAR=(.*)
+        line: "FOOBAR=\"{{replaced_text_var}}\""
+
+
+    - name: "TAKS_SPEC - [4/N] - Insert a block of text after file is over"
+      become: yes
+      become_user: '{{opc_user}}'
+      blockinfile:
+        path: "{{template_home}}/dummy_file"
+        insertafter: 'EOF'
+        block: |
+            # This block is inserted entirely after end of file
+              if [ -f {{opc_home_dir}}/.bashrc ]; then
+                    echo "Hi there!"
+              fi        
+        state: present
+
+  
+  when: bashrc_exists.stat.isreg is defined and other_config_file_exists.stat.isreg is not defined  

@@ -1,0 +1,15 @@
+---
+#
+# Author: DALQUINT - denny.alquinta@oracle.com
+# Purpose: lnx_static_wls_122 orchestrator yaml file
+
+# Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+#
+
+- include: tasks/pre_exec.yaml
+
+- name: Tasks for Configuring Domain
+  include_tasks: tasks/task_spec.yaml  
+  when: (ansible_facts['distribution'] == "OracleLinux" and ansible_facts['distribution_major_version'] == "7") 
+ 
+- include: tasks/post_exec.yaml
