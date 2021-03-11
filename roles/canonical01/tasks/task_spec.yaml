@@ -1,0 +1,133 @@
+---
+# 
+# Author: DALQUINT - denny.alquinta@oracle.com  
+# Purpose: Performs the steps required to create a WebLogic Server 12.2.x Domain on top of OEL 7.
+#         
+# Copyright (c) 2021 Oracle and/or its affiliates. All rights reserved.
+#
+- name: "PRECONDITION CHECK - [1/1] Check if .bashrc exists"
+  become: yes
+  stat:
+    path: "{{ opc_home_dir }}/.bashrc"
+  register: bashrc_exists
+
+
+- name: "PRECONDITION CHECK - [1/1] Configuration file exists"
+  become: yes
+  stat:
+    path: "{{ ofa_dir }}/the_config_file"
+  register: config_file_exists
+
+
+- name: Perform Configuration Tasks
+  block:
+  
+    - name: "TAKS_SPEC - [1/N] Create stage directory on first machine"
+      become: yes
+      file:
+        dest: "{{ item }}"
+        state: directory
+        owner: "{{ opc_user }}"
+        group: "{{ opc_group }}"
+        mode: 0755
+        recurse: yes
+      with_items:        
+        - '{{ stage_home }}'        
+      when: "inventory_hostname == groups['machines'][0]"
+
+    - name: "TAKS_SPEC - [2/N] Create template home in all machines"
+      become: yes
+      file:
+        dest: "{{ item }}"
+        state: directory
+        owner: "{{ opc_user }}"
+        group: "{{ opc_group }}"
+        mode: 0755
+        recurse: yes
+      with_items:                
+        - '{{ template_home }}'
+        - '{{ server_config }}'
+
+
+    - name: "DOMAIN CREATION - [] Copy Control files into {{template_home}}"
+      become: yes
+      become_user: "{{ opc_user }}"
+      template:
+        src: "{{ item.src }}"
+        dest: "{{template_home}}/{{item.dest}}"
+        mode: 0755
+      with_items:
+        - { src: 'startDomain.sh.j2', dest: 'startDomain.sh' }
+        - { src: 'startDomain.py.j2', dest: 'startDomain.py' }
+        - { src: 'stopDomain.sh.j2', dest: 'stopDomain.sh' }
+        - { src: 'stopDomain.py.j2', dest: 'stopDomain.py' }
+        - { src: 'create-ms-config-files.sh.j2', dest: 'create-ms-config-files.sh' }
+        - { src: 'create-ms-config-files.py.j2', dest: 'create-ms-config-files.py' }
+
+
+    - name : "Copy dummy text file for string replacement example"
+      become: yes
+      copy:
+        src: "{{ item }}"
+        dest: "{{ template_home }}"
+        mode: 0775
+      with_items:
+        - "dummy_file"
+      when: "inventory_hostname == groups['machines'][0]"
+
+    - name: "DOMAIN CREATION - [] Create configuration files inside {{server_config}} directory"
+      become: yes
+      become_user: "{{ opc_user }}"
+      shell: "{{template_home}}/create-ms-config-files.sh"
+      args:
+        chdir: "{{ template_home }}"
+    
+        
+    - name: "Enter a string before a specfic string"
+      become: yes
+      become_user: "{{ opc_user }}"
+      lineinfile:
+        path: "{{template_home}}/dummy_file"
+        insertbefore: 'DUMMY_FOR_BEFORE'
+        line: 'FLAG_FROM_ANSIBLE_BEFORE="true"'
+      when: "inventory_hostname == groups['machines'][0]" 
+
+
+    - name: "Enter a string after a specfic string"
+      become: yes
+      become_user: "{{ opc_user }}"
+      lineinfile:
+        path: "{{template_home}}/dummy_file"
+        regexp: '^DUMMY_FOR_AFTER(.*)'
+        insertafter: '^DUMMY_FOR_AFTER(.*)'
+        line: 'FLAG_FROM_ANSIBLE_AFTER="true"'
+      when: "inventory_hostname == groups['machines'][0]" 
+
+    - name : "Replace a regular expression with startup string FOOBAR"
+      become: yes
+      become_user: "{{ opc_user }}"
+      lineinfile:
+        path: "{{template_home}}/dummy_file"
+        state: present
+        regexp: ^FOOBAR=(.*)
+        line: "FOOBAR=\"{{replaced_text_var}}\""
+      when: "inventory_hostname == groups['machines'][0]"   
+
+
+    - name: "Insert a block of text after file is over"
+      become: yes
+      become_user: '{{opc_user}}'
+      blockinfile:
+        path: "{{template_home}}/dummy_file"
+        insertafter: 'EOF'
+        block: |
+            # This block is inserted entirely after end of file
+              if [ -f {{opc_home_dir}}/.bashrc ]; then
+                    echo "Hi there!"
+              fi        
+        state: present
+      when: "inventory_hostname == groups['machines'][0]"   
+  
+  
+  
+  when: bashrc_exists.stat.isreg is defined and config_file_exists.stat.isreg is not defined  

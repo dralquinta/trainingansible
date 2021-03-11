@@ -1,0 +1,18 @@
+---
+#
+# 
+# Author: DALQUINT - denny.alquinta@oracle.com 
+# Purpose: Run all generic post execution tasks
+#         
+# Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+#
+
+- name: "POSTEXEC - [1/1] Performing housekeeping of {{stage_home}}"
+  become: yes
+  file:
+    dest: "{{ item }}"
+    state: absent
+    owner: "{{ opc_user }}"
+    group: "{{ opc_group }}"
+  with_items:
+    - '{{ stage_home }}'

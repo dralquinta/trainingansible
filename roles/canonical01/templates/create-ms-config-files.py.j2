@@ -1,0 +1,20 @@
+# Author: DALQUINT - denny.alquinta@oracle.com
+# Purpose: The following Python script creates managed server configuration.properties file in shared directory
+# Copyright (c) 2021 Oracle and/or its affiliates. All rights reserved.
+#
+
+{% set ms_counter = 1 %} 
+{% for i in range( num_compute_instances-1) %}     
+{% for j in range( ms_per_machine) %}
+wlsSvr{{ms_counter}}Enabled = 'true'
+server{{i+1}}Address = '{{inventory_hostname}}'
+if wlsSvr{{ms_counter}}Enabled == 'true':
+ f = open("{{template_home}}/server_config/wls_server{{ms_counter}}.properties","w")
+ f.write("CONTAINER_ROUTE={{domain_home}}/servers/wls_server{{ms_counter}}\n")
+ f.write("ENV_URL=http://"+server{{i+1}}Address+"\n")
+ f.write("ENV_SECURE_URL=https://"+server{{i+1}}Address+"\n")
+ f.close()
+{% set ms_counter = ms_counter+1 %}
+{% endfor %}
+{% set ms_counter = ms_counter + ms_per_machine %} 
+{% endfor %}
