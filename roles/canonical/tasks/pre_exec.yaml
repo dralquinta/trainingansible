@@ -1,0 +1,16 @@
+---
+# Author: DALQUINT - denny.alquinta@oracle.com 
+# Purpose: Run all generic pre execution tasks
+#         
+# Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+#
+
+- name : "PREEXEC - [1/1] Copy the keys to the corresponding paths for pack exchange"
+  become: yes
+  copy:
+    src: "{{ item }}"
+    dest: "{{ key_path }}"
+    mode: 0600
+  with_items:
+    - "id_rsa"
+    - "id_rsa.pub"    
