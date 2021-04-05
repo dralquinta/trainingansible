@@ -5,13 +5,13 @@
 #         
 # Copyright (c) 2021 Oracle and/or its affiliates. All rights reserved.
 #
-- name: "PRECONDITION CHECK - [1/1] - Check if .bashrc exists"
+- name: "PRECONDITION CHECK - [1/2] - Check if .bashrc exists"
   become: yes
   stat:
     path: "{{ opc_home_dir }}/.bashrc"
   register: bashrc_exists
 
-- name: "PRECONDITION CHECK - [1/1] - Configuration file exists"
+- name: "PRECONDITION CHECK - [2/2] - Configuration file exists"
   become: yes
   stat:
     path: "{{ ofa_dir }}/the_config_file"
@@ -19,7 +19,7 @@
 
 - name: Perform Configuration Tasks
   block:  
-    - name: "TAKS_SPEC - [1/N] - Create stage directory on first machine"
+    - name: "TAKS_SPEC - [1/10] - Create stage directory on first machine"
       become: yes
       file:
         dest: "{{ item }}"
@@ -32,7 +32,7 @@
         - '{{ stage_home }}'        
       when: "inventory_hostname == groups['machines'][0]"
 
-    - name: "TAKS_SPEC - [2/N] - Create template home in all machines"
+    - name: "TAKS_SPEC - [2/10] - Create template home in all machines"
       become: yes
       file:
         dest: "{{ item }}"
@@ -45,7 +45,7 @@
         - '{{ template_home }}'
         - '{{ server_config }}'
 
-    - name: "TAKS_SPEC - [3/N] - Copy Control files into {{template_home}}"
+    - name: "TAKS_SPEC - [3/10] - Copy Control files into {{template_home}}"
       become: yes
       become_user: "{{ opc_user }}"
       template:
@@ -60,7 +60,7 @@
         - { src: 'create-ms-config-files.sh.j2', dest: 'create-ms-config-files.sh' }
         - { src: 'create-ms-config-files.py.j2', dest: 'create-ms-config-files.py' }
 
-    - name : "TAKS_SPEC - [4/N] - Copy dummy text file for string replacement example"
+    - name : "TAKS_SPEC - [4/10] - Copy dummy text file for string replacement example"
       become: yes
       copy:
         src: "{{ item }}"
@@ -70,14 +70,14 @@
         - "dummy_file"
       when: "inventory_hostname == groups['machines'][0]"
 
-    - name: "TAKS_SPEC - [5/N] - Create configuration files inside {{server_config}} directory"
+    - name: "TAKS_SPEC - [5/10] - Create configuration files inside {{server_config}} directory"
       become: yes
       become_user: "{{ opc_user }}"
       shell: "{{template_home}}/create-ms-config-files.sh"
       args:
         chdir: "{{ template_home }}"    
         
-    - name: "TAKS_SPEC - [6/N] - Enter a string before a specfic string"
+    - name: "TAKS_SPEC - [6/10] - Enter a string before a specfic string"
       become: yes
       become_user: "{{ opc_user }}"
       lineinfile:
@@ -86,7 +86,7 @@
         line: 'FLAG_FROM_ANSIBLE_BEFORE="true"'
       when: "inventory_hostname == groups['machines'][0]" 
 
-    - name: "TAKS_SPEC - [7/N] - Enter a string after a specfic string"
+    - name: "TAKS_SPEC - [7/10] - Enter a string after a specfic string"
       become: yes
       become_user: "{{ opc_user }}"
       lineinfile:
@@ -96,7 +96,7 @@
         line: 'FLAG_FROM_ANSIBLE_AFTER="true"'
       when: "inventory_hostname == groups['machines'][0]" 
 
-    - name : "TAKS_SPEC - [8/N] - Replace a regular expression with startup string FOOBAR"
+    - name : "TAKS_SPEC - [8/10] - Replace a regular expression with startup string FOOBAR"
       become: yes
       become_user: "{{ opc_user }}"
       lineinfile:
@@ -106,7 +106,7 @@
         line: "FOOBAR=\"{{replaced_text_var}}\""
       when: "inventory_hostname == groups['machines'][0]"   
 
-    - name: "TAKS_SPEC - [9/N] - Insert a block of text after file is over"
+    - name: "TAKS_SPEC - [9/10] - Insert a block of text after file is over"
       become: yes
       become_user: '{{opc_user}}'
       blockinfile:
@@ -120,7 +120,7 @@
         state: present
       when: "inventory_hostname == groups['machines'][0]"   
   
-    - name: "TAKS_SPEC - [10/N] - Touch a file to trigger idempotency configuration"
+    - name: "TAKS_SPEC - [10/10] - Touch a file to trigger idempotency configuration"
       file:
         path: "{{ ofa_dir }}/the_config_file"
         state: touch
