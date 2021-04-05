@@ -11,5 +11,3 @@
   block:
     - include_role:
         name: canonical01
-    - include_role:
-        name: canonical02
